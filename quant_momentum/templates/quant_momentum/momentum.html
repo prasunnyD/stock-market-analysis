@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Momentum Anaylsis</title>
+</head>
+<body>
+	<h1>Momentum Analysis</h1>
+	<table>
+		<tr>
+			<th>Ticker</th>
+			<th>Price</th>
+		</tr>
+		{% for i in dataframe %}
+		<tr>
+			<td>{{i.Ticker}}</td>
+			<td>{{i.Price}}</td>
+		</tr>
+		{% endfor %}
+	</table>
+</body>
+</html>
