@@ -5,6 +5,7 @@ from statistics import mean
 import requests
 import pandas as pd
 import numpy as np
+import json
 import csv
 import os
 
@@ -55,15 +56,15 @@ def home(request):
 	my_columns = [
 	'Ticker',
 	'Price',
-	'One-Year Price Return',
-	'One-Year Return Percentile',
-	'Six-Month Price Return',
-	'Six-Month Return Percentile',
-	'Three-Month Price Return',
-	'Three-Month Return Percentile',
-	'One-Month Price Return',
-	'One-Month Return Percentile',
-	'HQM Score'
+	'OneYearPriceReturn',
+	'OneYearReturnPercentile',
+	'SixMonthPriceReturn',
+	'SixMonthReturnPercentile',
+	'ThreeMonthPriceReturn',
+	'ThreeMonthReturnPercentile',
+	'OneMonthPriceReturn',
+	'OneMonthReturnPercentile',
+	'HQMScore'
 	]
 
 	final_dataframe = pd.DataFrame(columns = my_columns)
@@ -88,27 +89,34 @@ def home(request):
 				ignore_index = True)
 
 	time_periods = [
-	'One-Year',
-	'Six-Month',
-	'Three-Month',
-	'One-Month'
+	'OneYear',
+	'SixMonth',
+	'ThreeMonth',
+	'OneMonth'
 	]
-	final_dataframe.sort_values('One-Year Price Return', ascending = False, inplace = True)
+	final_dataframe.sort_values('OneYearPriceReturn', ascending = False, inplace = True)
 	hqm_dataframe = final_dataframe.mask(final_dataframe.astype(object).eq('None')).dropna()
 
 	for row in hqm_dataframe.index:
 		for time_period in time_periods:
-			change_column = f'{time_period} Price Return'
-			percentile_column = f'{time_period} Return Percentile'
+			change_column = f'{time_period}PriceReturn'
+			percentile_column = f'{time_period}ReturnPercentile'
 			hqm_dataframe.loc[row, percentile_column] = stats.percentileofscore(hqm_dataframe[change_column], hqm_dataframe.loc[row, change_column]) / 100
 
 	for row in hqm_dataframe.index:
 		momentum_percentiles = []
 		for time_period in time_periods:
-			momentum_percentiles.append(hqm_dataframe.loc[row, f'{time_period} Return Percentile'])
-			hqm_dataframe.loc[row, 'HQM Score'] = mean(momentum_percentiles)
+			momentum_percentiles.append(hqm_dataframe.loc[row, f'{time_period}ReturnPercentile'])
+			hqm_dataframe.loc[row, 'HQMScore'] = mean(momentum_percentiles)
 
-	hqm_dataframe.sort_values('HQM Score', ascending = False, inplace = True)
+	hqm_dataframe.sort_values('HQMScore', ascending = False, inplace = True)
+
+	json_records = hqm_dataframe.reset_index().to_json(orient ='records') 
+	data = [] 
+	data = json.loads(json_records)
+	print(data)
+	context = {'d': data}
+
 	#final_dataframe.drop(final_dataframe[final_dataframe['One-Year Price Return'].index == 'None'], inplace = True)
 	# return render(request, 'quant_momentum/momentum.html', {
 	# 	'dataframe': final_dataframe,
@@ -122,8 +130,11 @@ def home(request):
 	#  		data['latestPrice']],
 	# 		index = my_columns),
 	#  	ignore_index = True)
-	htmltable = hqm_dataframe.to_html()
-	return HttpResponse(htmltable)
+
+	# htmltable = hqm_dataframe.to_html()
+	# return HttpResponse(htmltable)
+
+	return render(request, 'quant_momentum/momentum.html', context)
 	
 
 def chunks(lst, n):
