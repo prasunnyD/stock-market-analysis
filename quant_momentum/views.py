@@ -107,6 +107,8 @@ def home(request):
 		for time_period in time_periods:
 			momentum_percentiles.append(hqm_dataframe.loc[row, f'{time_period} Return Percentile'])
 			hqm_dataframe.loc[row, 'HQM Score'] = mean(momentum_percentiles)
+
+	hqm_dataframe.sort_values('HQM Score', ascending = False, inplace = True)
 	#final_dataframe.drop(final_dataframe[final_dataframe['One-Year Price Return'].index == 'None'], inplace = True)
 	# return render(request, 'quant_momentum/momentum.html', {
 	# 	'dataframe': final_dataframe,
