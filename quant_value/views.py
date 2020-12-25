@@ -5,6 +5,7 @@ from statistics import mean
 import requests
 import pandas as pd
 import numpy as np
+import json
 import csv
 import os
 
@@ -14,17 +15,17 @@ def home(request):
 	rv_columns = [
     'Ticker',
     'Price', 
-    'Price-to-Earnings Ratio',
-    'PE Percentile',
-    'Price-to-Book Ratio',
-    'PB Percentile',
-    'Price-to-Sales Ratio',
-    'PS Percentile',
-    'EV/EBITDA',
-    'EV/EBITDA Percentile',
-    'EV/GP',
-    'EV/GP Percentile',
-    'RV Score'
+    'PricetoEarningsRatio',
+    'PEPercentile',
+    'PricetoBookRatio',
+    'PBPercentile',
+    'PricetoSalesRatio',
+    'PSPercentile',
+    'EVdEBITDA',
+    'EVdEBITDAPercentile',
+    'EVdGP',
+    'EVdGPPercentile',
+    'RVScore'
 ]
 
 	stocks = pd.read_csv('sp_500_stocks.csv')
@@ -77,15 +78,15 @@ def home(request):
 				ignore_index = True
 	        )
 
-	for column in ['Price-to-Earnings Ratio', 'Price-to-Book Ratio','Price-to-Sales Ratio',  'EV/EBITDA','EV/GP']:
+	for column in ['PricetoEarningsRatio', 'PricetoBookRatio','PricetoSalesRatio', 'EVdEBITDA','EVdGP']:
 		rv_dataframe[column].fillna(rv_dataframe[column].mean(), inplace = True)
 
 	metrics = {
-			'Price-to-Earnings Ratio': 'PE Percentile',
-			'Price-to-Book Ratio':'PB Percentile',
-			'Price-to-Sales Ratio': 'PS Percentile',
-			'EV/EBITDA':'EV/EBITDA Percentile',
-			'EV/GP':'EV/GP Percentile'
+			'PricetoEarningsRatio': 'PEPercentile',
+			'PricetoBookRatio':'PBPercentile',
+			'PricetoSalesRatio': 'PSPercentile',
+			'EVdEBITDA':'EVdEBITDAPercentile',
+			'EVdGP':'EVdGPPercentile'
 			}
 
 	for row in rv_dataframe.index:
@@ -96,12 +97,18 @@ def home(request):
 		value_percentiles = []
 		for metric in metrics.keys():
 			value_percentiles.append(rv_dataframe.loc[row, metrics[metric]])
-		rv_dataframe.loc[row, 'RV Score'] = mean(value_percentiles)
+		rv_dataframe.loc[row, 'RVScore'] = mean(value_percentiles)
 	
-	rv_dataframe.sort_values('RV Score', ascending = False, inplace = True)
+	rv_dataframe.sort_values('RVScore', ascending = False, inplace = True)
 
-	htmltable = rv_dataframe.to_html()
-	return HttpResponse(htmltable)
+	# htmltable = rv_dataframe.to_html()
+	# return HttpResponse(htmltable)
+	json_records = rv_dataframe.reset_index().to_json(orient ='records') 
+	data = [] 
+	data = json.loads(json_records)
+	context = {'d': data}
+
+	return render(request, 'quant_value/value.html', context)
 
 
 def chunks(lst, n):

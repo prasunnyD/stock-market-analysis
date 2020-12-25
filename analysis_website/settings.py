@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'quant_momentum.apps.QuantMomentumConfig',
+    'quant_value.apps.QuantValueConfig',
 ]
 
 MIDDLEWARE = [

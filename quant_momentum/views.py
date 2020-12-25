@@ -114,7 +114,6 @@ def home(request):
 	json_records = hqm_dataframe.reset_index().to_json(orient ='records') 
 	data = [] 
 	data = json.loads(json_records)
-	print(data)
 	context = {'d': data}
 
 	#final_dataframe.drop(final_dataframe[final_dataframe['One-Year Price Return'].index == 'None'], inplace = True)
