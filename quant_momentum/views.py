@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from scipy import stats
+from statistics import mean
 import requests
 import pandas as pd
 import numpy as np
@@ -101,7 +102,11 @@ def home(request):
 			percentile_column = f'{time_period} Return Percentile'
 			hqm_dataframe.loc[row, percentile_column] = stats.percentileofscore(hqm_dataframe[change_column], hqm_dataframe.loc[row, change_column]) / 100
 
-	
+	for row in hqm_dataframe.index:
+		momentum_percentiles = []
+		for time_period in time_periods:
+			momentum_percentiles.append(hqm_dataframe.loc[row, f'{time_period} Return Percentile'])
+			hqm_dataframe.loc[row, 'HQM Score'] = mean(momentum_percentiles)
 	#final_dataframe.drop(final_dataframe[final_dataframe['One-Year Price Return'].index == 'None'], inplace = True)
 	# return render(request, 'quant_momentum/momentum.html', {
 	# 	'dataframe': final_dataframe,
